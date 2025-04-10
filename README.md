@@ -4,7 +4,7 @@ by Steven Jorgensen, Erik Hemberg, Jamal TouTouh, and Una-May O'Reilly
 This repository is the official implementation of the work conducted in [Guiding Evolutionary AutoEncoder Training with Activation-Based Pruning Operators](https://doi.org/10.1145/3712256.3726449). 
 
 ## About
-A question that remains open in deep learning is why deep models need to be trained at a greater capacity, i.e. with many more parameters, than the dimensionality of their inputs. This question is important because the high capacities of deep networks make them very expensive to train and still quite expensive to use for inference. Parameter pruning is a method of removing redundant parameters from a model while retaining high or even better performance. We explore a coevolutionary approach to autoencoder training and pruning and find that when scheduled correctly, it can be more effective for pruning models than traditional approaches and can be used to prune during the training of the model rather than at the end of training.
+Deep learning models often require training at a greater capacity (i.e., with more parameters) than the dimensionality of their inputs, which leads to high computational costs during training and inference. Parameter pruning removes redundant parameters while maintaining or improving performance. This study explores a coevolutionary approach to autoencoder training and pruning, demonstrating that when scheduled correctly, it can outperform traditional methods and enable pruning during training rather than post-training.
 
 ![Overview of Lipi](./assets/lipi-overview.jpg)
 
@@ -17,11 +17,14 @@ Please see the generated figures in [paper_plots.ipynb](https://github.com/ALFA-
 
 ## Setup
 
-We require python 3.12 or later, as well as pip. Anaconda is also recommended.
+**Requirements**
+* Python 3.12 or later
+* Pip
+* Anaconda (recommended)
 
 ### Installation
 
-Create the conda environment:
+Create the Conda environment:
 ```
 conda create --name lipi_ae python=3.12
 ```
@@ -37,12 +40,12 @@ pip install -r requirements.txt
 ## Getting Started
 
 ### Generating the Dataset
-First we need to generate the Binary Clustering Problem dataset used in the paper, which we can do as follows:
+To generate the Binary Clustering Problem dataset used in the paper:
 ```
 PYTHONPATH=src python src/aes_lipi/utilities/gecco_25_experiments.py --create_data True
 ```
 
-If you want to generate Binary Clustering problems with different configuration settings, you can as follows:
+To generate Binary Clustering problems with custom settings:
 ```
 PYTHONPATH=src python src/aes_lipi/datasets/data_loader.py --n_dim 1000 --n_clusters 10
 ```
@@ -59,8 +62,8 @@ Each preset RQ_NAME option and the associated configuration can be found in the 
 
 * `"epochs"` - Number of generations to run the population for
 * `"learning_rate"` - Optimizer learning rate for the AutoEncoders
-* `"trials"` - Number of replicants of the experiment to run
-* `"radius"` - Ring neighborhood radius for the population
+* `"trials"` - Number of experiment replicates
+* `"radius"` - Ring neighborhood radius for populations
 * `"lexi_threshold"` - Pruning threshold for CONJUNCTIVE pruning method
 * `"cell_evaluation"` - Type of AE Trainings to be run. Options are [ann_canonical, lipi_simple]
 * `"population_size"` - Number of Encoder, Decoder pairs in the population
@@ -71,10 +74,11 @@ Each preset RQ_NAME option and the associated configuration can be found in the 
 * `"prune_probability"` - The probability that pruning occurs for an individual during the pruning phase of the algorithm
 * `"prune_amount"` - The percent of nodes to prune when pruning occurs. This has no effect when using the CONJUNCTIVE pruning method.
 
-To run **all** of the provided preset configurations, we can run the following (Note: This will take a lonnnng time, recommend running each individually):
+To run **all** of the provided preset configurations:
 ```
 PYTHONPATH=src python src/aes_lipi/utilities/gecco_25_experiments.py --rq all_rqs --all_rqs True
 ```
+Note: Running all configurations will take significant time; running them individually is recommended.
 
 ## Reference
 ```
