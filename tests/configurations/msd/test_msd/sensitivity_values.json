@@ -1,0 +1,4 @@
+{
+    "cell_evaluation": ["ann_canonical", "epoch-node"],
+    "batch_size": [100, 1000, 10000]
+    }
