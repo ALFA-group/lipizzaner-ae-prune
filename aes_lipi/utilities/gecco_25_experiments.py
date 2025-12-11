@@ -22,7 +22,7 @@ experiment_configuration_defaults = {
     # Fitness Evaluations?
     "learning_rate": 1e-05,
     "visualize": "final",
-    "trials": 30,
+    "trials": 1,
     "checkpoint_interval": 10000,
     "rng_seed": 1,
     "radius": 1,
@@ -253,7 +253,7 @@ rq_sensitivities = {
     "lex_final_n_small": {
         "cell_evaluation": ["lipi_simple"],
         "population_size": [10],
-        "epochs": [400],
+        "epochs": [10],
         "environment": [
             "AutoencoderBinaryClustering_Small",
         ],
@@ -447,9 +447,6 @@ def parse_arguments(param: List[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--variant_id", type=int, default=-1, help="which variant to run (for supercomputer). -1 ignores this arg"
-    )
-    parser.add_argument(
-        "--trial_id", type=int, default=-1, help="which trial to run (for supercomputer). -1 ignores this arg"
     )
     parser.add_argument(
         "--rq",
