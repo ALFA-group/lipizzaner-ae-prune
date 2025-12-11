@@ -37,6 +37,7 @@ experiment_configuration_defaults = {
     "output_dir": "out_bc_aa_gecco_25",
     "batch_size": 5,
     "lexi_threshold": 0.1,
+    "keep_pruned_zero": False
 }
 rq_sensitivities = {
     "capacity": {

@@ -242,6 +242,7 @@ def evaluate_cell(
                     kwargs["prune_method"],
                     kwargs.get("prune_amount", 0.0),
                     kwargs.get("test_data", None),
+                    keep_pruned_zero=kwargs.get("keep_pruned_zero", False),
                 )
                 E_p[i], D_p[i] = reset_ae_activations(E_p[i], D_p[i])
 

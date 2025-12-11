@@ -151,6 +151,7 @@ def evaluate_cell_lipi_simple_prune_then_eval(
                 kwargs["prune_method"],
                 kwargs.get("prune_amount", 0.0),
                 kwargs.get("test_data", None),
+                keep_pruned_zero=kwargs.get("keep_pruned_zero", False),
             )
 
     # Evaluate

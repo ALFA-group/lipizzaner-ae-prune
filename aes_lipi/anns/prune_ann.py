@@ -50,7 +50,8 @@ def main(method: str, dataset_name: str, epochs: int, save: bool = False):
     print("W", torch.count_nonzero(w_mask))
     print("W", w_mask.shape, np.sum(w_mask.detach().numpy() == 0))
     print("W", get_n_zero_parameters(module, "weight_mask"))
-    prune.remove(module, "weight")
+    # note: do not remove the pruning reparameterization here so masks remain available
+    # prune.remove(module, "weight")
     print("W2", module.weight.shape, np.sum(module.weight.detach().numpy() == 0))
     print("AFTER REMOVE", list(module.named_parameters())[0:2])
     # Prune activations
@@ -153,6 +154,7 @@ def prune_ann(
     prune_method: str,
     prune_amount: float,
     activations: Optional[Dict[str, torch.Tensor]] = None,
+    keep_pruned_zero: bool = False,
 ) -> torch.nn.Module:
     n_pruned = 0
     for i, layer in enumerate(ann):
@@ -176,7 +178,10 @@ def prune_ann(
                     module = layer
                     if prune_method == "random":
                         _ = prune.random_unstructured(module, property, prune_amount)
-                        prune.remove(module, property)
+                        # If keep_pruned_zero is True, keep the pruning reparameterization
+                        # (i.e. keep the mask buffer) so masked weights remain zero.
+                        if not keep_pruned_zero:
+                            prune.remove(module, property)
 
                     elif prune_method == "activation":
                         if activation_values is None:
@@ -195,7 +200,8 @@ def prune_ann(
                             prune_amount,
                             activations=activation_values_p,
                         )
-                        prune.remove(module, property)
+                        if not keep_pruned_zero:
+                            prune.remove(module, property)
 
                     elif prune_method == "lexicase":
                         if property == "weight":
@@ -210,7 +216,8 @@ def prune_ann(
                             prune_amount,
                             activations=activation_values_p,
                         )
-                        prune.remove(module, property)
+                        if not keep_pruned_zero:
+                            prune.remove(module, property)
 
                     n_pruned += get_n_zero_parameters(module, property)
 
@@ -269,6 +276,7 @@ def prune_ae(
     prune_amount: float,
     test_data: Optional[torch.utils.data.DataLoader] = None,
     lexi_threshold: float = 0.1,
+    keep_pruned_zero: bool = False,
 ) -> Tuple[torch.nn.Module, torch.nn.Module]:
     assert 0.0 <= prune_amount < 1.0
     if prune_method == "lexicase":
@@ -304,6 +312,7 @@ def prune_ae(
             prune_method,
             prune_amount,
             activations=enc_activations,
+            keep_pruned_zero=keep_pruned_zero,
         )
 
         decoder_p = prune_ann(
@@ -311,6 +320,7 @@ def prune_ae(
             prune_method,
             prune_amount,
             activations=dec_activations,
+            keep_pruned_zero=keep_pruned_zero,
         )
         logging.info(f"A P {encoder_p.n_pruned} {decoder_p.n_pruned}")
         encoder.n_pruned = str(encoder_p.n_pruned)

@@ -156,6 +156,7 @@ def evaluate_cell_lipi_simple(
                 kwargs.get("prune_amount", 0.0),
                 kwargs.get("test_data", None),
                 kwargs.get("lexi_threshold", 0.1),
+                keep_pruned_zero=kwargs.get("keep_pruned_zero", False),
             )
 
     e_p, d_p = reset_ae_activations(e_p, d_p)

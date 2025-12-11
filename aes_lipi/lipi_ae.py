@@ -158,6 +158,12 @@ def parse_arguments(param: List[str]) -> argparse.Namespace:
         help="Schedule for pruning probability, e.g. --prune_method increase",
     )
     parser.add_argument(
+        "--keep_pruned_zero",
+        type=str2bool,
+        default=False,
+        help="If True, keep pruned parameters at zero for the rest of training",
+    )
+    parser.add_argument(
         "--no_execution",
         action="store_true",
         help="Do not run. Used for testing",

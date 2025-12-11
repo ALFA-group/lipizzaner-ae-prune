@@ -85,6 +85,7 @@ def evaluate_ann_canonical(
                     kwargs["prune_method"],
                     kwargs.get("prune_amount", 0.0),
                     kwargs.get("test_data", None),
+                    keep_pruned_zero=kwargs.get("keep_pruned_zero", False),
                 )
                 e_p, d_p = reset_ae_activations(e_p, d_p)
                 ae.encoder = e_p
