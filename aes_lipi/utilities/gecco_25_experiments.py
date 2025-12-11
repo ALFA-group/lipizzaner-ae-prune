@@ -50,7 +50,7 @@ rq_sensitivities = {
             # "AutoencoderBinaryClustering_Small",
         ],
         "dataset_name": ["binary_clustering_10_100_1000"],
-        "prune_method": ["random", "lexicase"],
+        "prune_method": ["random", "lexicase", "roulette"],
         "prune_schedule": [
             "exponential",
         ],
@@ -112,7 +112,7 @@ rq_sensitivities = {
         "dataset_name": [
             "binary_clustering_10_100_1000",
         ],
-        "prune_method": ["random", "lexicase"],
+        "prune_method": ["random", "lexicase", "roulette"],
         "prune_schedule": [
             "fixed",
             "increase",
@@ -178,7 +178,7 @@ rq_sensitivities = {
         "dataset_name": [
             "binary_clustering_10_100_1000",
         ],
-        "prune_method": ["random", "lexicase"],
+        "prune_method": ["random", "lexicase", "roulette"],
         "prune_schedule": [
             "fixed",
             "increase",
@@ -215,7 +215,7 @@ rq_sensitivities = {
         "dataset_name": [
             "binary_clustering_10_100_4000",
         ],
-        "prune_method": ["random"],
+        "prune_method": ["random", "roulette"],
         "prune_schedule": [
             "exponential"
         ],
@@ -232,7 +232,7 @@ rq_sensitivities = {
         "dataset_name": [
             "binary_clustering_10_100_1000",
         ],
-        "prune_method": ["random", "lexicase", "activation"],
+        "prune_method": ["random", "lexicase", "activation", "roulette"],
         "prune_schedule": [
             "prune_after",
         ],
@@ -283,7 +283,7 @@ rq_sensitivities = {
         "dataset_name": [
             "binary_clustering_10_100_1000",
         ],
-        "prune_method": ["random", "lexicase", "activation"],
+        "prune_method": ["random", "lexicase", "activation", "roulette"],
         "prune_schedule": [
             "prune_after",
         ],

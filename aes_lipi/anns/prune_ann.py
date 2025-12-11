@@ -113,6 +113,54 @@ class LexicasePruningMethod(ActivationPruningMethod):
         return mask_p
 
 
+class RoulettePruningMethod(prune.BasePruningMethod):
+    """Prune based on activation magnitude with weighted random (roulette) selection.
+    
+    Low activation magnitudes are more likely to be pruned.
+    """
+
+    PRUNING_TYPE = "unstructured"
+
+    def compute_mask(self, t, default_mask):
+        mask = default_mask.clone()
+        act = t.detach().cpu().numpy() if isinstance(t, torch.Tensor) else np.array(t)
+        
+        # normalize activations to [0, 1]
+        a_min = np.min(act)
+        a_max = np.max(act)
+        if a_max - a_min > 0:
+            norm = (act - a_min) / (a_max - a_min)
+        else:
+            norm = np.zeros_like(act, dtype=float)
+
+        # make low activations more likely to be pruned (prune_scores = importance to keep)
+        prune_scores = 1.0 - np.abs(norm)
+        prune_scores = prune_scores.astype(float)
+        # avoid exact zeros in probability
+        prune_scores = prune_scores + 1e-12
+
+        flat_scores = prune_scores.flatten()
+        total = flat_scores.size
+        # Get prune_amount from the method's attribute
+        amount = getattr(self, '_roulette_amount', 0.1)
+        k = int(round(amount * total))
+        
+        if k <= 0:
+            # keep all (mask all 1s)
+            return torch.ones_like(mask)
+        if k >= total:
+            # prune all (mask all 0s)
+            return torch.zeros_like(mask)
+
+        probs = flat_scores / np.sum(flat_scores)
+        chosen = np.random.choice(total, size=k, replace=False, p=probs)
+        mask_flat = np.ones(total, dtype=int)
+        mask_flat[chosen] = 0
+        mask_np = mask_flat.reshape(act.shape)
+        mask_p = torch.Tensor(mask_np.astype(int))
+        return mask_p
+
+
 def activation_unstructured(
     module: torch.nn.Module,
     name: str,
@@ -145,6 +193,33 @@ def lexicase_unstructured(
         print(module.in_features, module.out_features)
         print(module.weight.shape)
         print(module.bias.shape)
+
+    return module
+
+
+def roulette_unstructured(
+    module: torch.nn.Module,
+    name: str,
+    amount: float,
+    activations: Optional[np.ndarray] = None,
+) -> torch.nn.Module:
+    """Prune approximately `amount` fraction of parameters by sampling without
+    replacement where low activation magnitudes are more likely to be removed.
+
+    Requires activation values; will raise an error if None.
+    """
+    # activation data is required for roulette pruning
+    if activations is None:
+        raise ValueError("roulette pruning requires activation values")
+
+    try:
+        method = RoulettePruningMethod()
+        method._roulette_amount = amount
+        RoulettePruningMethod.apply(module, name, importance_scores=activations)
+    except Exception as e:
+        print("Error in roulette pruning", e)
+        print("activations shape:", activations.shape if hasattr(activations, 'shape') else type(activations))
+        raise
 
     return module
 
@@ -211,6 +286,28 @@ def prune_ann(
                         else:
                             activation_values_p = activation_values[:, 0]
                         _ = lexicase_unstructured(
+                            module,
+                            property,
+                            prune_amount,
+                            activations=activation_values_p,
+                        )
+                        if not keep_pruned_zero:
+                            prune.remove(module, property)
+
+                    elif prune_method == "roulette":
+                        # activation-weighted random pruning (roulette selection)
+                        if activation_values is None:
+                            raise ValueError(
+                                f"roulette pruning requires activation values for layer {i}, property {property}"
+                            )
+                        if property == "weight":
+                            activation_values_p = np.repeat(
+                                activation_values, module.in_features, axis=1
+                            )
+                        else:
+                            activation_values_p = activation_values[:, 0]
+
+                        _ = roulette_unstructured(
                             module,
                             property,
                             prune_amount,
