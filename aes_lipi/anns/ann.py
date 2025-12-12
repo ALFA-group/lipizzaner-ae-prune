@@ -80,9 +80,19 @@ class Encoder(torch.nn.Module):
 
     def clone(self) -> torch.nn.Module:
         my_clone = type(self)(self.x_dim, self.z_dim, self.width, self.height)
+         # Check if original has pruning
+        has_pruning = any('_orig' in name for name, _ in self.named_parameters())
+        
+        if has_pruning:
+            # Apply same pruning structure to clone
+            for module in my_clone.modules():
+                if isinstance(module, (torch.nn.Linear, torch.nn.Conv2d)):
+                    torch.nn.utils.prune.identity(module, 'weight')
+                    if module.bias is not None:
+                        torch.nn.utils.prune.identity(module, 'bias')
         my_clone.load_state_dict(self.state_dict())
         my_clone.register_activation_hooks()
-        my_clone.n_pruned = self.n_pruned        
+        my_clone.n_pruned = self.n_pruned
         return my_clone
 
 
@@ -117,6 +127,15 @@ class Decoder(torch.nn.Module):
 
     def clone(self) -> torch.nn.Module:
         my_clone = type(self)(self.x_dim, self.z_dim, self.width, self.height)
+        has_pruning = any('_orig' in name for name, _ in self.named_parameters())
+        
+        if has_pruning:
+            # Apply same pruning structure to clone
+            for module in my_clone.modules():
+                if isinstance(module, (torch.nn.Linear, torch.nn.Conv2d)):
+                    torch.nn.utils.prune.identity(module, 'weight')
+                    if module.bias is not None:
+                        torch.nn.utils.prune.identity(module, 'bias')
         my_clone.load_state_dict(self.state_dict())
         my_clone.register_activation_hooks()
         my_clone.n_pruned = self.n_pruned
