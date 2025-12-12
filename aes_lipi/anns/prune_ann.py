@@ -83,6 +83,14 @@ def get_n_zero_parameters(module: torch.nn.Module, name: str) -> int:
         zero_el = 0
     return zero_el
 
+def count_pruned_parameters(module, property):
+    """Count pruned parameters for a specific property (weight or bias)"""
+    mask_name = property + '_mask'
+    if hasattr(module, mask_name):
+        mask = getattr(module, mask_name)
+        return (mask == 0).sum().item()
+    return 0
+
 
 class ActivationPruningMethod(prune.BasePruningMethod):
     """Prune based on activation variance"""
@@ -315,8 +323,10 @@ def prune_ann(
                         )
                         if not keep_pruned_zero:
                             prune.remove(module, property)
-
-                    n_pruned += get_n_zero_parameters(module, property)
+                    if keep_pruned_zero:
+                        n_pruned += count_pruned_parameters(module, property)
+                    else:
+                        n_pruned += get_n_zero_parameters(module, property)
 
     ann.n_pruned = n_pruned
     logging.info(f"{ann.n_pruned}")
