@@ -63,6 +63,8 @@ def evaluate_cells_lipi_simple(
                 score_keys=score_keys,
                 last_iteration=(epochs - 1),
                 solution_concept=solution_concept,
+                t=t,
+                epochs=epochs,
                 **kwargs,
             )
             stats[-1]["fe_cnt"] = fe_cnt
@@ -85,6 +87,8 @@ def evaluate_cell_lipi_simple(
     score_keys: List[str],
     last_iteration: int,
     solution_concept: callable,
+    t: int,
+    epochs: int,
     **kwargs: Dict[str, Any],
 ) -> Dict[str, Any]:
     logging.debug(
@@ -138,7 +142,27 @@ def evaluate_cell_lipi_simple(
         [e_p], [d_p], training_data, node.Autoencoder, solution_concept
     )
     # Prune
-    if kwargs.get("prune_method", "None") != "None":
+    if kwargs.get("prune_method", "None") == "magnitude":
+        prune_epoch = (epochs - 1) - 3 # Prune then finetune for the last 3 epochs
+        if prune_epoch == t:
+            logging.info(f"Magnitude Pruning at Epoch {t}")
+            prune_args = {
+                "epoch": iteration,
+                "final_epoch": last_iteration,
+                "probability": kwargs["prune_probability"],
+                "n_solutions": len(node.encoders)
+            }
+            e_p, d_p = prune_ae(
+                e_p,
+                d_p,
+                kwargs["prune_method"],
+                kwargs.get("prune_amount", 0.0),
+                kwargs.get("test_data", None),
+                kwargs.get("lexi_threshold", 0.1),
+                keep_pruned_zero=kwargs.get("keep_pruned_zero", False),
+            )
+
+    elif kwargs.get("prune_method", "None") != "None":
         prune_args = {
             "epoch": iteration,
             "final_epoch": last_iteration,

@@ -146,7 +146,7 @@ def parse_arguments(param: List[str]) -> argparse.Namespace:
     parser.add_argument(
         "--prune_method",
         type=str,
-        choices=["None", "activation", "random"],
+        choices=["None", "activation", "random", "lexicase", "roulette", "magnitude"],
         default="None",
         help="Method for pruning, e.g. --prune_method random",
     )

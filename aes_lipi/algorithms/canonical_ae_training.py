@@ -41,6 +41,7 @@ def evaluate_ann_canonical(
 
     fe_cnt = 0
     ae.train()
+
     for t in tqdm(range(epochs), position=2, desc="Epochs"):
         stat = {
             "iteration": t,
@@ -68,7 +69,29 @@ def evaluate_ann_canonical(
             optimizer.step()
             losses.append(loss.cpu().detach().cpu().numpy())
 
-        if kwargs.get("prune_method", "None") != "None":
+        if kwargs.get("prune_method", "None") == "magnitude":
+            prune_epoch = (epochs - 1) - 3 # Prune then finetune for the last 3 epochs
+            if prune_epoch == t:
+                logging.info(f"Magnitude Pruning at Epoch {t}")
+                prune_args = {
+                    "epoch": t,
+                    "final_epoch": epochs,
+                    "probability": kwargs["prune_probability"],
+                    "n_solutions": 1,
+                }
+                e_p, d_p = prune_ae(
+                    ae.encoder,
+                    ae.decoder,
+                    kwargs["prune_method"],
+                    kwargs.get("prune_amount", 0.0),
+                    kwargs.get("test_data", None),
+                    keep_pruned_zero=kwargs.get("keep_pruned_zero", False),
+                )
+                e_p, d_p = reset_ae_activations(e_p, d_p)
+                ae.encoder = e_p
+                ae.decoder = d_p
+
+        elif kwargs.get("prune_method", "None") != "None":
             prune_args = {
                 "epoch": t,
                 "final_epoch": epochs,

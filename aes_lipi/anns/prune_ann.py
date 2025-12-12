@@ -323,6 +323,13 @@ def prune_ann(
                         )
                         if not keep_pruned_zero:
                             prune.remove(module, property)
+                    elif prune_method == "magnitude":
+                        # standard L1 magnitue pruning
+                        _ = prune.l1_unstructured(module, property, prune_amount)
+                        # If keep_pruned_zero is True, keep the pruning reparameterization
+                        # (i.e. keep the mask buffer) so masked weights remain zero.
+                        if not keep_pruned_zero:
+                            prune.remove(module, property)
                     if keep_pruned_zero:
                         n_pruned += count_pruned_parameters(module, property)
                     else:
