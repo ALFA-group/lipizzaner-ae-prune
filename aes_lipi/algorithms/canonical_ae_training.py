@@ -73,12 +73,6 @@ def evaluate_ann_canonical(
             prune_epoch = (epochs - 1) - 3 # Prune then finetune for the last 3 epochs
             if prune_epoch == t:
                 logging.info(f"Magnitude Pruning at Epoch {t}")
-                prune_args = {
-                    "epoch": t,
-                    "final_epoch": epochs,
-                    "probability": kwargs["prune_probability"],
-                    "n_solutions": 1,
-                }
                 e_p, d_p = prune_ae(
                     ae.encoder,
                     ae.decoder,

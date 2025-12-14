@@ -146,12 +146,6 @@ def evaluate_cell_lipi_simple(
         prune_epoch = (epochs - 1) - 3 # Prune then finetune for the last 3 epochs
         if prune_epoch == t:
             logging.info(f"Magnitude Pruning at Epoch {t}")
-            prune_args = {
-                "epoch": iteration,
-                "final_epoch": last_iteration,
-                "probability": kwargs["prune_probability"],
-                "n_solutions": len(node.encoders)
-            }
             e_p, d_p = prune_ae(
                 e_p,
                 d_p,
