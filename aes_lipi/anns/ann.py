@@ -26,11 +26,13 @@ def reset_activation_store(ann: torch.nn.Module) -> None:
 def get_activations(lexi_store):
     all_values = {}
     for key in lexi_store[0].keys():
-        temp_values = np.zeros((len(lexi_store), *lexi_store[0][key].shape))
+        # Use list to handle variable batch sizes
+        temp_values_list = []
         for j, values in enumerate(lexi_store):
             D = values[key].numpy()
-            temp_values[j] = D
-        all_values[key] = temp_values
+            temp_values_list.append(D)
+        # Concatenate all batches
+        all_values[key] = np.concatenate(temp_values_list, axis=0)
 
     return all_values
 
@@ -38,12 +40,17 @@ def get_activations(lexi_store):
 def get_activation_variance(ann: torch.nn.Module) -> Dict[str, torch.Tensor]:
     all_stds = {}
     for key in ann.store.keys():
-        all_values = np.zeros((len(ann.stores), *ann.store[key].shape))
+        # Use list to handle variable batch sizes
+        all_values_list = []
         for i, values in enumerate(ann.stores):
             D = values[key].numpy()
-            all_values[i] = D
-
-        std_v = np.sum(np.std(all_values, axis=0), axis=0).reshape(-1, 1)
+            all_values_list.append(D)
+        
+        # Concatenate along batch dimension to handle different batch sizes
+        all_values = np.concatenate(all_values_list, axis=0)
+        
+        # Compute std across all samples, then sum across batch dimension
+        std_v = np.std(all_values, axis=0).sum(axis=0).reshape(-1, 1)
         all_stds[key] = std_v
 
     return all_stds
