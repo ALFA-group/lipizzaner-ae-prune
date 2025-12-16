@@ -392,6 +392,37 @@ class LetterDataset(Dataset):
         sample = self.data[idx, :]
         return sample, idx
 
+
+class CIFAR10Dataset(Dataset):
+    """CIFAR-10 dataset wrapper returning flattened vectors.
+
+    - 32x32x3 images flattened to 3,072 features in [0,1].
+    - Labels are loaded but not used; we return (sample, idx) for consistency.
+    """
+    def __init__(self, split: str = 'train', data_path: str = '') -> None:
+        super(CIFAR10Dataset).__init__()
+        self.split = split
+        base_path = os.path.join(data_path, 'data', 'cifar10') if data_path else 'data/cifar10'
+
+        is_train = split == 'train'
+        # ToTensor scales to [0,1]; no further normalization to preserve generic pipeline behavior
+        transform = transforms.ToTensor()
+        self.ds = datasets.CIFAR10(root=base_path, train=is_train, download=True, transform=transform)
+        self.n_features = 32 * 32 * 3
+        logging.info(f"Loading cifar10 {split}: {len(self.ds)} samples from {base_path}")
+
+    def __len__(self) -> int:
+        return len(self.ds)
+
+    def __getitem__(self, idx: int) -> torch.Tensor:
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        img, _ = self.ds[idx]
+        # img: [C,H,W] in [0,1]; flatten to [3072]
+        sample = img.view(-1)
+        return sample, idx
+
 def min_max_normalization(tensor, min_value, max_value):
     min_tensor = tensor.min()
     tensor = tensor - min_tensor
@@ -440,6 +471,11 @@ def create_batches(
         train_dataset = LetterDataset(split='train', data_path=data_path)
         test_dataset = LetterDataset(split='test', data_path=data_path)
         width = 16  # letter recognition has 16 features
+        height = 1
+    elif dataset_name == "cifar10":
+        train_dataset = CIFAR10Dataset(split='train', data_path=data_path)
+        test_dataset = CIFAR10Dataset(split='test', data_path=data_path)
+        width = 32 * 32 * 3  # 3072 features when flattened
         height = 1
 
     else:
