@@ -19,3 +19,10 @@ old_out_*_gecco_25/
 slurm_logs
 logs
 paper_runs/
+configs/
+data/
+results/
+out_*/
+rqe_runs/
+paper_runs/
+local_runs/
