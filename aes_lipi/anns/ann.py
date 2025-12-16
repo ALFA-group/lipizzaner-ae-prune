@@ -49,8 +49,9 @@ def get_activation_variance(ann: torch.nn.Module) -> Dict[str, torch.Tensor]:
         # Concatenate along batch dimension to handle different batch sizes
         all_values = np.concatenate(all_values_list, axis=0)
         
-        # Compute std across all samples, then sum across batch dimension
-        std_v = np.std(all_values, axis=0).sum(axis=0).reshape(-1, 1)
+        # Compute std across all samples (batch dimension)
+        # This gives shape (out_features,) for each layer
+        std_v = np.std(all_values, axis=0).reshape(-1, 1)
         all_stds[key] = std_v
 
     return all_stds

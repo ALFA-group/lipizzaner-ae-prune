@@ -221,12 +221,25 @@ def roulette_unstructured(
         raise ValueError("roulette pruning requires activation values")
 
     try:
+        # Get the parameter to determine expected shape
+        param = getattr(module, name)
+        expected_shape = param.shape
+        
+        # Ensure activations match the parameter shape
+        if activations.shape != expected_shape:
+            raise ValueError(
+                f"roulette pruning: activations shape {activations.shape} should match parameter shape {expected_shape} for {name}"
+            )
+        
         method = RoulettePruningMethod()
         method._roulette_amount = amount
         RoulettePruningMethod.apply(module, name, importance_scores=activations)
     except Exception as e:
         print("Error in roulette pruning", e)
         print("activations shape:", activations.shape if hasattr(activations, 'shape') else type(activations))
+        if hasattr(module, name):
+            param = getattr(module, name)
+            print(f"parameter {name} shape:", param.shape)
         raise
 
     return module
@@ -309,10 +322,13 @@ def prune_ann(
                                 f"roulette pruning requires activation values for layer {i}, property {property}"
                             )
                         if property == "weight":
+                            # activation_values has shape (out_features, 1)
+                            # Repeat along axis 1 to match weight shape (out_features, in_features)
                             activation_values_p = np.repeat(
                                 activation_values, module.in_features, axis=1
                             )
                         else:
+                            # For bias, just take the first column
                             activation_values_p = activation_values[:, 0]
 
                         _ = roulette_unstructured(
