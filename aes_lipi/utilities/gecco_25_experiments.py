@@ -474,6 +474,12 @@ def parse_arguments(param: List[str]) -> argparse.Namespace:
     parser.add_argument(
         "--all_rqs", type=str2bool, default=False, help="Run all rq settings"
     )
+    parser.add_argument(
+        "--num_workers",
+        type=int,
+        default=0,
+        help="DataLoader workers to pass through to lipi_ae",
+    )
 
     args = parser.parse_args(param)
     return args
@@ -502,6 +508,9 @@ if __name__ == "__main__":
                 base_params["rq_sensitivities"] = cfg["rq_sensitivities"]
     else:
         base_params = experiment_configuration_defaults.copy()
+    # propagate num_workers into base_params so variants inherit it
+    if hasattr(args, "num_workers"):
+        base_params["num_workers"] = args.num_workers
     if args.create_data:
         create_data()
         sys.exit(0)

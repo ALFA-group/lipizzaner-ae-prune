@@ -126,6 +126,12 @@ def parse_arguments(param: List[str]) -> argparse.Namespace:
         help="Batch size. E.g. 2",
     )
     parser.add_argument(
+        "--num_workers",
+        type=int,
+        default=0,
+        help="DataLoader workers. E.g. 8",
+    )
+    parser.add_argument(
         "--learning_rate",
         type=float,
         default=1e-5,
@@ -247,6 +253,7 @@ def main(
         batch_size,
         dataset_name,
         shuffle_training=not kwargs.get("no_shuffle_data", False),
+        num_workers=kwargs.get("num_workers", 0),
     )
     if (
         kwargs.get("calculate_test_loss", False)

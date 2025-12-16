@@ -67,9 +67,10 @@ def load_data_and_autoencoder(
     dataset_name: str,
     data_loader_str: str = "test",
     data_path: str = "",
+    num_workers: int = 0,
 ) -> Tuple[DataLoader, DataLoader, int, int, Any]:
     train_loader, test_loader, width, height = create_batches(
-        batch_size, dataset_name, data_path
+        batch_size, dataset_name, data_path, num_workers=num_workers
     )
     if data_loader_str == "test":
         data_loader = test_loader

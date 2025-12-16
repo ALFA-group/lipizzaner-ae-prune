@@ -437,6 +437,7 @@ def create_batches(
     dataset_name: str,
     data_path: str = "",
     shuffle_training: bool = True,
+    num_workers: int = 0,
 ) -> Tuple[DataLoader, DataLoader, int, int]:
     # TODO improve dataset loading
     if dataset_name.startswith("binary_clustering"):
@@ -483,12 +484,18 @@ def create_batches(
 
     # Data Loader (Input Pipeline)
     train_loader = torch.utils.data.DataLoader(
-        dataset=train_dataset, batch_size=batch_size, shuffle=shuffle_training
+        dataset=train_dataset,
+        batch_size=batch_size,
+        shuffle=shuffle_training,
+        num_workers=num_workers,
     )
     if not shuffle_training:
         assert train_loader.sampler.__class__.__name__ == "SequentialSampler"
     test_loader = torch.utils.data.DataLoader(
-        dataset=test_dataset, batch_size=batch_size, shuffle=False
+        dataset=test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
     )
     logging.info(f"Create datasets with batch size {batch_size}")
     return train_loader, test_loader, width, height
