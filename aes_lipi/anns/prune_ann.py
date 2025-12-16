@@ -422,7 +422,8 @@ def prune_ae(
         dec_lexi_store = []
         for x in filter_cases:
             ae = AutoencoderBinaryClustering(encoder, decoder)
-            ae(x[0])
+            # Ensure a batch dimension so activation hooks keep the 2D shape (batch, nodes)
+            ae(x[0].unsqueeze(0))
             enc_lexi_store.append(encoder.stores.pop())
             dec_lexi_store.append(decoder.stores.pop())
 
@@ -481,6 +482,11 @@ def increase_schedule(probability: float, **kwargs) -> float:
     """Increase probability and return it"""
     epoch = kwargs["epoch"]
     final_epoch = kwargs["final_epoch"]
+    
+    # Handle edge case where final_epoch is 0 or negative
+    if final_epoch <= 0:
+        return probability
+    
     probability_per_epoch = probability / final_epoch
     current_probability = epoch * probability_per_epoch
     return current_probability
@@ -490,6 +496,11 @@ def decrease_schedule(probability: float, **kwargs) -> float:
     """Decrease probability and return it"""
     epoch = kwargs["epoch"]
     final_epoch = kwargs["final_epoch"]
+    
+    # Handle edge case where final_epoch is 0 or negative
+    if final_epoch <= 0:
+        return probability
+    
     probability_per_epoch = probability / final_epoch
     current_probability = epoch * probability_per_epoch
     return 1.0 - current_probability
@@ -528,6 +539,10 @@ def exponential_schedule(probability: float, **kwargs) -> float:
     final_epoch = kwargs["final_epoch"]
     steepness = 2  # TODO make it a parameter
 
+    # Handle edge case where final_epoch is 0 or negative
+    if final_epoch <= 0:
+        return probability
+    
     current_probability = probability * (1 - np.exp(-steepness * epoch / final_epoch))
     return current_probability
 
@@ -538,6 +553,11 @@ def population_schedule(probability: float, **kwargs) -> float:
     epoch = kwargs["epoch"]
     final_epoch = kwargs["final_epoch"]
     n_solutions = kwargs["n_solutions"]
+    
+    # Handle edge case where final_epoch or n_solutions is 0
+    if final_epoch <= 0 or n_solutions <= 0:
+        return probability
+    
     probability_per_epoch_and_solution = probability / (final_epoch * n_solutions)
     current_probability = epoch * probability_per_epoch_and_solution
     return current_probability
