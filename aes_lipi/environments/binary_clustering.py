@@ -179,6 +179,60 @@ class VariationalDecoderBinaryClustering(DecoderBinaryClustering):
         )
 
 
+class EncoderCIFAR10(Encoder):
+    def __init__(self, x_dim=3072, z_dim=10, width=32, height=32) -> None:
+        super(EncoderCIFAR10, self).__init__(x_dim, z_dim, width, height)
+        assert self.x_dim == self.height * self.width * 3
+        self.h_dim = 512
+        self.encoder = torch.nn.Sequential(
+            torch.nn.Linear(self.x_dim, self.h_dim),
+            torch.nn.ReLU(True),
+            torch.nn.Linear(self.h_dim, self.h_dim),
+            torch.nn.ReLU(True),
+            torch.nn.Linear(self.h_dim, self.z_dim),
+            torch.nn.ReLU(True),
+        )
+        self.register_activation_hooks()
+
+    def encode(self, x):
+        h = self.encoder(x)
+        self.stores.append(copy.deepcopy(self.store))
+        return h
+
+    @staticmethod
+    def get_fixed_ann(**kwargs) -> torch.nn.Module:
+        raise NotImplementedError(
+            "Implement. Store an ANN and then load it. But not everytime"
+        )
+
+
+class DecoderCIFAR10(Decoder):
+    def __init__(self, x_dim=3072, z_dim=10, width=32, height=32) -> None:
+        super(DecoderCIFAR10, self).__init__(x_dim, z_dim, width, height)
+        assert self.x_dim == self.height * self.width * 3
+        self.h_dim = 512
+        self.decoder = torch.nn.Sequential(
+            torch.nn.Linear(self.z_dim, self.h_dim),
+            torch.nn.ReLU(True),
+            torch.nn.Linear(self.h_dim, self.h_dim),
+            torch.nn.ReLU(True),
+            torch.nn.Linear(self.h_dim, self.x_dim),
+            torch.nn.Sigmoid(),
+        )
+        self.register_activation_hooks()
+
+    def decode(self, z):
+        x_p = self.decoder(z)
+        self.stores.append(copy.deepcopy(self.store))
+        return x_p
+
+    @staticmethod
+    def get_fixed_ann(**kwargs) -> torch.nn.Module:
+        raise NotImplementedError(
+            "Implement. Store an ANN and then load it. But not everytime"
+        )
+
+
 class AutoencoderBinaryClustering(Autoencoder):
     def __init__(self, encoder, decoder):
         super(AutoencoderBinaryClustering, self).__init__(encoder, decoder)
@@ -189,6 +243,18 @@ class AutoencoderBinaryClustering(Autoencoder):
         self.encoder.loss = L1.data.item()
         self.decoder.loss = L1.data.item()
         return L1
+
+
+class AutoencoderCIFAR10(Autoencoder):
+    def __init__(self, encoder, decoder):
+        super(AutoencoderCIFAR10, self).__init__(encoder, decoder)
+        self.mse_loss = torch.nn.MSELoss()
+
+    def loss_function(self, x_p, x) -> torch.Tensor:
+        mse = self.mse_loss(x_p, x)
+        self.encoder.loss = mse.data.item()
+        self.decoder.loss = mse.data.item()
+        return mse
 
 
 class VariationalAutoencoderBinaryClustering(VariationalAutoencoder):

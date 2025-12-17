@@ -22,13 +22,16 @@ from aes_lipi.anns.ann import Autoencoder, Decoder, Encoder, VariationalAutoenco
 from aes_lipi.datasets.data_loader import create_batches
 from aes_lipi.environments.binary_clustering import (
     AutoencoderBinaryClustering,
+    AutoencoderCIFAR10,
     DecoderBinaryClustering,
     DecoderBinaryClusteringLarge,
     DecoderBinaryClusteringSmall,
+    DecoderCIFAR10,
     DenoisingAutoencoderBinaryClustering,
     EncoderBinaryClustering,
     EncoderBinaryClusteringLarge,
     EncoderBinaryClusteringSmall,
+    EncoderCIFAR10,
     VariationalAutoencoderBinaryClustering,
     VariationalDecoderBinaryClustering,
     VariationalEncoderBinaryClustering,
@@ -369,6 +372,13 @@ def get_autoencoder(
         Autoencoder = AutoencoderBinaryClustering
         Decoder = DecoderBinaryClusteringLarge
         Encoder = EncoderBinaryClusteringLarge
+    elif environment == "AutoencoderCIFAR10":
+        Autoencoder = AutoencoderCIFAR10
+        Decoder = DecoderCIFAR10
+        Encoder = EncoderCIFAR10
+        # For CIFAR-10: x_dim = 3*32*32 = 3072
+        x_dim = 3 * width * height
+        kwargs = {"width": width, "height": height, "x_dim": x_dim}
     else:
         raise Exception(f"Undefined environment {environment}")
 
