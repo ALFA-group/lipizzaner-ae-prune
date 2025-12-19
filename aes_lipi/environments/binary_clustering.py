@@ -180,9 +180,8 @@ class VariationalDecoderBinaryClustering(DecoderBinaryClustering):
 
 
 class EncoderCIFAR10(Encoder):
-    def __init__(self, x_dim=3072, z_dim=10, width=32, height=32) -> None:
+    def __init__(self, x_dim=3072, z_dim=10, width=3072, height=1) -> None:
         super(EncoderCIFAR10, self).__init__(x_dim, z_dim, width, height)
-        assert self.x_dim == self.height * self.width * 3
         self.h_dim = 512
         self.encoder = torch.nn.Sequential(
             torch.nn.Linear(self.x_dim, self.h_dim),
@@ -207,9 +206,8 @@ class EncoderCIFAR10(Encoder):
 
 
 class DecoderCIFAR10(Decoder):
-    def __init__(self, x_dim=3072, z_dim=10, width=32, height=32) -> None:
+    def __init__(self, x_dim=3072, z_dim=10, width=3072, height=1) -> None:
         super(DecoderCIFAR10, self).__init__(x_dim, z_dim, width, height)
-        assert self.x_dim == self.height * self.width * 3
         self.h_dim = 512
         self.decoder = torch.nn.Sequential(
             torch.nn.Linear(self.z_dim, self.h_dim),

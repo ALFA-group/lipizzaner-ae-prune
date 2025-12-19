@@ -376,9 +376,6 @@ def get_autoencoder(
         Autoencoder = AutoencoderCIFAR10
         Decoder = DecoderCIFAR10
         Encoder = EncoderCIFAR10
-        # For CIFAR-10: x_dim = 3*32*32 = 3072
-        x_dim = 3 * width * height
-        kwargs = {"width": width, "height": height, "x_dim": x_dim}
     else:
         raise Exception(f"Undefined environment {environment}")
 
