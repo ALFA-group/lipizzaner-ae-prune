@@ -248,6 +248,11 @@ def evaluate_cell(
 
         # Replace and set center
     node = replace(node, E_p, D_p, losses)
+    # Always clear stored activations after each cell evaluation to avoid buildup
+    # across epochs when pruning is infrequent.
+    node.encoders[0], node.decoders[0] = reset_ae_activations(
+        node.encoders[0], node.decoders[0]
+    )
     stat["min_replacement_loss"] = np.min(losses)
     stat["timestamp"] = float(datetime.datetime.timestamp(datetime.datetime.now()))
     stat["n_pruned_encoder"] = int(node.encoders[0].encoder.n_pruned)

@@ -328,6 +328,14 @@ def train(ae, epoch, train_loader, optimizer):
         )
 
 
+def clear_activation_stores(ae):
+    # Drop stored activations once an epoch is done to avoid unbounded growth.
+    if hasattr(ae, "encoder"):
+        ae.encoder.clear_stores()
+    if hasattr(ae, "decoder"):
+        ae.decoder.clear_stores()
+
+
 def test(ae, epoch, test_loader):
     ae.eval()
     assert not ae.training
@@ -414,6 +422,7 @@ def main(method: str, dataset_name: str, epochs: int, save: bool = False):
     for epoch in range(1, epochs):
         train(ae, epoch, train_loader, optimizer)
         test(ae, epoch, test_loader)
+        clear_activation_stores(ae)
 
     with torch.no_grad():
         z = torch.randn(30, ae.z_dim)

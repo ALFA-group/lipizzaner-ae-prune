@@ -108,6 +108,10 @@ def evaluate_ann_canonical(
                 ae.encoder = e_p
                 ae.decoder = d_p
 
+        # Clear activation stores every epoch to prevent accumulation when
+        # pruning is skipped or rare.
+        ae.encoder, ae.decoder = reset_ae_activations(ae.encoder, ae.decoder)
+
         fe_cnt += 1
         stat["min_selection_loss"] = float(np.min(losses))
         stat["min_replacement_loss"] = float(np.min(losses))
